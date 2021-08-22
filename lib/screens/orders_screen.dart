@@ -19,7 +19,7 @@ class OrdersScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Your Orders'),
       ),
-
+/*
       drawer: AppDrawer(),
 
       //Here we want to output information about our orders that were placed and each order then in turn contains information
@@ -28,7 +28,7 @@ class OrdersScreen extends StatelessWidget {
         itemCount: orderData.orders.length, //this defines the amount of items that have to be built
         //This below 'itemBuilder' has to built single list items.
         itemBuilder: (ctx, i) => OrderItem(orderData.orders[i]),
-      ),
+      ),*/
     );
   }
 }
