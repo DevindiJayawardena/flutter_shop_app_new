@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   provider: ^5.0.0
   intl: ^0.17.0  #this gives us the intl package that helps us with formatting dates
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:
@@ -79,3 +80,7 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+
+
+

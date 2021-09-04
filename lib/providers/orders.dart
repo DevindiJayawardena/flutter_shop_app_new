@@ -1,5 +1,8 @@
+
 import 'package:flutter/foundation.dart';
 import './cart.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert'; //to convert our map to json
 
 
 //This defines how an order should looks like
@@ -39,18 +42,80 @@ class Orders with ChangeNotifier {
   }
 
 
+
+  Future<void> fetchAndSetOrders() async{
+    final url = Uri.parse('https://first-project-4de81-default-rtdb.firebaseio.com/orders.json');
+    final response = await http.get(url);  // 'response' is an object here
+    //print(json.decode(response.body));
+    final List<OrderItem> loadedOrders = [];
+    //here in this 'extractedData', the data will be stored which we have printed above
+    final extractedData = json.decode(response.body) as Map<String, dynamic>;
+    if (extractedData == null){ //we put this here to avoid from the error called 'foreach on null' whenever there is no orders in the server.
+      return; //if there is no any orders in the server, then nothing will be returned to our app.
+      //so this below codes will not run if the extractedData is null.
+    }
+    extractedData.forEach((orderId, orderData) {
+      loadedOrders.add(OrderItem(
+          id: orderId,
+          amount: orderData['amount'],
+          dateTime: DateTime.parse(orderData['dateTime']),
+          products: (orderData['products'] as List<dynamic>).map((item) =>
+              CartItem(
+                id : item['id'],
+                price: item['price'],
+                quantity: item['quantity'],
+                title: item['title'],
+              )).toList(),
+      ));
+    });
+    _orders = loadedOrders.reversed.toList(); //this is done to view the recent orders at first. (to the reverse order)
+    notifyListeners();
+  }
+
+
+
+
   //This method executes, when the 'ORDER NOW' button is clicked in the cart_screen.dart file
   //THE IDEA OF THIS 'addOrder()' METHOD IS TO ADD ALL THE CONTENT OF THE CART, INTO ONE ORDER. So we should get a list of cart items
   // as an argument. And also the total value. With that, we can add this as a new order.
-  void addOrder(List<CartItem> cartProducts, double total) {
+  Future<void> addOrder(List<CartItem> cartProducts, double total) async{
+    final url = Uri.parse('https://first-project-4de81-default-rtdb.firebaseio.com/orders.json');
+    final timestamp = DateTime.now();
+    final response = await http.post(
+      url,
+      body: json.encode({ //this is a map
+        // In this map, we want to store all the data which should be stored in the server in the end.
+        'amount' : total,
+        'dateTime' : timestamp.toIso8601String(),
+        'products' : cartProducts.map((cp) => { //'cp' means on every cart product
+          //then we want to return a new map. which means, convert our objects based on 'CartItem' into maps.
+          'id' : cp.id,
+          'title' : cp.title,
+          'quantity' : cp.quantity,
+          'price' : cp.price,
+        }).toList(),
+      }),
+    );
+    //SO BY THE BELOW CODE,WE ADD OUR ORDER LOCALLY.
     //Here 0 is, to add this new order as the first element of the list.
     // the element to be added to the _orders list is 'OrderItem'
     _orders.insert(0, OrderItem(
-        id: DateTime.now().toString(),
+        id: json.decode(response.body)['name'], //this is the auto generated id for the order by Firebase.
         amount: total,
         products: cartProducts,
-        dateTime: DateTime.now(),
+        dateTime: timestamp,
     ),);
     notifyListeners(); //So by using this, any places in our app which depend on orders are now updated.
   }
+
 }
+
+
+
+
+
+
+
+
+
+

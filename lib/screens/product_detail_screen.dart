@@ -22,7 +22,7 @@ class ProductDetailScreen extends StatelessWidget{
       context,
       listen: false,  //If we set this as 'true', then the build method of the widget in which we're using the 'Provider.of' will
             // rerun whenever the provided object (in here the 'Products' object) changed.
-    ).findByID(productId);  //by doing this, we have fetched our product here by its ID.
+    ).findById(productId);  //by doing this, we have fetched our product here by its ID.
     return Scaffold(
       appBar: AppBar(
         title: Text(loadedProduct.title),

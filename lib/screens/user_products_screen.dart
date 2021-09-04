@@ -10,6 +10,11 @@ import './edit_product_screen.dart';
 class UserProductsScreen extends StatelessWidget {
   static const routeName = '/user-products';
 
+  Future<void> _refreshProducts(BuildContext context) async {
+    await Provider.of<Products>(context, listen : false).fetchAndSetProducts();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     //by doing the below line of code, we let the provider package know that we want to tap into the nearest provided 'Products' object
@@ -35,21 +40,25 @@ class UserProductsScreen extends StatelessWidget {
 
       drawer: AppDrawer(),
 
-      body: Padding(
-        padding: EdgeInsets.all(8),
-        child : ListView.builder(
-          // This 'itemCount' defines the amount of products that we have. We get that from our 'Products' provider, from our provided
-          // 'Products' object to be precise. SO, WE WANT TO SET UP A LISTENER TO THAT PROVIDER. And also we need to get accessed to the
-          // 'Products' class.
-          itemCount : productsData.items.length,
-          itemBuilder: (_ , i) => Column(
-            children: <Widget>[
-              UserProductItem(
-                title: productsData.items[i].title,
-                imageUrl: productsData.items[i].imageUrl,
-              ),
-              Divider(),
-            ],
+      body: RefreshIndicator(
+        onRefresh : () => _refreshProducts(context), //here we call an anonymous function since we have to pass the context with it
+        child : Padding (
+          padding: EdgeInsets.all(8),
+          child : ListView.builder(
+            // This 'itemCount' defines the amount of products that we have. We get that from our 'Products' provider, from our provided
+            // 'Products' object to be precise. SO, WE WANT TO SET UP A LISTENER TO THAT PROVIDER. And also we need to get accessed to the
+            // 'Products' class.
+            itemCount : productsData.items.length,
+            itemBuilder: (_ , i) => Column(
+              children: <Widget>[
+                UserProductItem(
+                  id: productsData.items[i].id,
+                  title: productsData.items[i].title,
+                  imageUrl: productsData.items[i].imageUrl,
+                ),
+                Divider(),
+              ],
+            ),
           ),
         ),
       ),

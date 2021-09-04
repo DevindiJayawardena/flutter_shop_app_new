@@ -2,7 +2,8 @@
 //This 'Product' is just a class its not a widget. Bcz we just want to use this as a blueprint to create objects based on this class
 
 import 'package:flutter/foundation.dart'; //This is used for the '@required' fields
-
+import 'package:http/http.dart' as http; //'http' is the prefix here as a bundle of all the features under this prefix.
+import 'dart:convert'; //to encode to a json code
 
 
 class Product with ChangeNotifier{
@@ -28,13 +29,40 @@ class Product with ChangeNotifier{
   });
 
 
+  void _setFavValue(bool newValue){
+    //in here we want to roll it back when there is any failure
+    isFavorite = newValue;
+    notifyListeners();
+  }
+
+
+
   //The purpose of this method is we invert the value of the 'isFavorite'. So if it is true, then we want to set it false. If it is
   // false, then we want to set it true.
-  void toggleFavoriteStatus() {
+  Future<void> toggleFavoriteStatus() async{
+    final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     // in order to let all listeners know that we need to call 'notifyListeners()'. so when we are letting them to listen, if some
     // thing changed, then they will rebuild.
     notifyListeners();
+    //final url = Uri.parse('https://first-project-4de81-default-rtdb.firebaseio.com/products/$id'); //this is for error handling
+    final url = Uri.parse('https://first-project-4de81-default-rtdb.firebaseio.com/products/$id.json');
+    try{
+      final response = await http.patch(
+        url,
+        body: json.encode({
+          'isFavorite' : isFavorite,
+        }),
+      );
+      if(response.statusCode >= 400) { //which means if there's any error
+        //in here we want to roll it back when there is any failure
+        _setFavValue(oldStatus);
+      }
+    }
+    catch(error){
+      //in here we want to roll it back when there is any failure
+      _setFavValue(oldStatus);
+    }
   }
 }
 

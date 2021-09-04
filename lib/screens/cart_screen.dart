@@ -43,24 +43,7 @@ class CartScreen extends StatelessWidget{
                     ),
                     backgroundColor: Theme.of(context).primaryColorDark,
                   ),
-                  TextButton(
-                    child: Text(
-                      'ORDER NOW',
-                      style : TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                    onPressed: () {
-                      //Here we set listen:false bcz we don't want to listen to this Orders provider, bcz we need not to listen to
-                      // the changes in Orders. We only just want to dispatch an action.
-                      Provider.of<Orders>(context, listen : false,).addOrder(
-                        cart.items.values.toList(), //here we pass a list of our cart item objects.
-                        cart.totalAmount,
-                      );
-                      cart.clear();
-                    },
-                  ),
+                  OrderButton(cart: cart),
                 ],
               ),
             ),
@@ -85,6 +68,57 @@ class CartScreen extends StatelessWidget{
           ),
         ],
       ),
+    );
+  }
+}
+
+
+
+
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+
+
+class _OrderButtonState extends State<OrderButton>{
+  var _isLoading = false;
+
+  @override
+  Widget build(BuildContext context){
+    return FlatButton(
+      child: _isLoading ? CircularProgressIndicator() : Text(
+        'ORDER NOW',
+        //style : TextStyle(
+          //fontSize: 12,
+          //color: Theme.of(context).primaryColor,
+        //),
+      ),
+      onPressed: (widget.cart.totalAmount <= 0 || _isLoading) ? null : () async {
+        setState(() {
+          _isLoading = true;
+        });
+        //Here we set listen:false bcz we don't want to listen to this Orders provider, bcz we need not to listen to
+        // the changes in Orders. We only just want to dispatch an action.
+        await Provider.of<Orders>(context, listen : false,).addOrder(
+          widget.cart.items.values.toList(), //here we pass a list of our cart item objects.
+          widget.cart.totalAmount,
+        );
+        setState(() {
+          _isLoading = false;
+        });
+        widget.cart.clear();
+      },
+      textColor: Theme.of(context).primaryColor,
     );
   }
 }
